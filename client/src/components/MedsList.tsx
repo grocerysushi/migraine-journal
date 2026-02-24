@@ -12,52 +12,90 @@ interface Props {
 }
 
 export function MedsList({ meds, onChange }: Props) {
-  const add = () => onChange([...meds, { id: uuidv4(), name: '', dose: '', time_taken: toFormDateTime(new Date()), relief: 5 }]);
+  const add = () => onChange([
+    ...meds,
+    { id: uuidv4(), name: '', dose: '', time_taken: toFormDateTime(new Date()), relief: 5 },
+  ]);
   const remove = (i: number) => onChange(meds.filter((_, idx) => idx !== i));
   const update = (i: number, field: keyof MedFormItem, value: string | number) =>
     onChange(meds.map((m, idx) => idx === i ? { ...m, [field]: value } : m));
 
   return (
-    <div className="mb-4">
-      <p className="text-sm font-semibold text-gray-700 mb-2">Medications Taken</p>
+    <div className="mb-5">
+      <p className="text-sm font-semibold text-slate-700 mb-2.5">Medications Taken</p>
+
       {meds.map((med, i) => (
-        <div key={med.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-3">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-sm font-semibold text-gray-700">Med #{i + 1}</span>
-            <button type="button" onClick={() => remove(i)} className="text-red-500 text-sm hover:text-red-700">Remove</button>
+        <div key={med.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-3">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+              Medication {i + 1}
+            </span>
+            <button
+              type="button"
+              onClick={() => remove(i)}
+              className="text-xs font-semibold text-red-400 hover:text-red-600 transition-colors"
+            >
+              Remove
+            </button>
           </div>
+
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Name *</label>
+              <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                Name *
+              </label>
               <input
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                value={med.name} onChange={e => update(i, 'name', e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5
+                           text-sm text-slate-800 placeholder:text-slate-300
+                           focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent"
+                value={med.name}
+                onChange={e => update(i, 'name', e.target.value)}
                 placeholder="e.g. Ibuprofen"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Dose</label>
+              <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                Dose
+              </label>
               <input
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                value={med.dose} onChange={e => update(i, 'dose', e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5
+                           text-sm text-slate-800 placeholder:text-slate-300
+                           focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent"
+                value={med.dose}
+                onChange={e => update(i, 'dose', e.target.value)}
                 placeholder="e.g. 400mg"
               />
             </div>
           </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-500 mb-1">Time Taken</label>
+
+          <div className="mb-4">
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+              Time Taken
+            </label>
             <input
               type="datetime-local"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              value={med.time_taken} onChange={e => update(i, 'time_taken', e.target.value)}
+              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5
+                         text-sm text-slate-800
+                         focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent"
+              value={med.time_taken}
+              onChange={e => update(i, 'time_taken', e.target.value)}
             />
           </div>
-          <IntensitySlider label="Relief (0–10)" value={med.relief} onChange={v => update(i, 'relief', v)} />
+
+          <IntensitySlider
+            label="Relief (0 – 10)"
+            value={med.relief}
+            onChange={v => update(i, 'relief', v)}
+          />
         </div>
       ))}
+
       <button
-        type="button" onClick={add}
-        className="w-full border-2 border-dashed border-indigo-400 text-indigo-600 rounded-lg py-2.5 text-sm font-semibold hover:bg-indigo-50 transition-colors"
+        type="button"
+        onClick={add}
+        className="w-full border-2 border-dashed border-violet-200 text-violet-500
+                   rounded-2xl py-3 text-sm font-semibold
+                   hover:border-violet-400 hover:bg-violet-50 transition-colors"
       >
         + Add Medication
       </button>

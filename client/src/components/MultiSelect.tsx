@@ -13,8 +13,10 @@ export function MultiSelect({ options, selected, onChange, label, error }: Props
     onChange(selected.includes(v) ? selected.filter(x => x !== v) : [...selected, v]);
 
   return (
-    <div className="mb-4">
-      {label && <p className="text-sm font-semibold text-gray-700 mb-2">{label}</p>}
+    <div className="mb-5">
+      {label && (
+        <p className="text-sm font-semibold text-slate-700 mb-2.5">{label}</p>
+      )}
       <div className="flex flex-wrap gap-2">
         {options.map(opt => {
           const active = selected.includes(opt.value);
@@ -23,17 +25,19 @@ export function MultiSelect({ options, selected, onChange, label, error }: Props
               key={opt.value}
               type="button"
               onClick={() => toggle(opt.value)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-colors
+              className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium
+                          border transition-all duration-100 select-none
                 ${active
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}
+                  ? 'border-violet-400 bg-violet-600 text-white shadow-sm'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                }`}
             >
               {opt.label}
             </button>
           );
         })}
       </div>
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+      {error && <p className="text-red-500 text-xs mt-1.5">{error}</p>}
     </div>
   );
 }
