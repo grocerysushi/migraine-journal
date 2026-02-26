@@ -13,21 +13,19 @@ export function IntensitySlider({ value, onChange, label, error }: Props) {
 
   return (
     <div className="mb-5">
-      {label && <p className="text-sm font-semibold text-slate-700 mb-3">{label}</p>}
+      {label && <p className="text-sm font-semibold text-[var(--text-secondary)] mb-3">{label}</p>}
 
-      {/* Current value display */}
       <div className="flex items-baseline gap-2.5 mb-4">
         <span className="text-6xl font-black leading-none tabular-nums" style={{ color }}>
           {value}
         </span>
         <div>
           <p className="text-base font-bold" style={{ color }}>{lbl}</p>
-          <p className="text-xs text-slate-400">out of 10</p>
+          <p className="text-xs text-[var(--text-tertiary)]">out of 10</p>
         </div>
       </div>
 
-      {/* Segmented track */}
-      <div className="flex gap-1 h-12 items-end">
+      <div className="flex gap-1 items-end" style={{ height: 48 }}>
         {Array.from({ length: 11 }, (_, i) => {
           const active  = i === value;
           const filled  = i <= value;
@@ -40,18 +38,19 @@ export function IntensitySlider({ value, onChange, label, error }: Props) {
               title={`${i} – ${intensityLabel(i)}`}
               style={{
                 height: segH,
-                backgroundColor: filled ? intensityColor(i) : '#E2E8F0',
+                backgroundColor: filled ? intensityColor(i) : 'var(--muted)',
                 outline: active ? `2px solid ${intensityColor(i)}` : 'none',
                 outlineOffset: active ? '2px' : '0',
               }}
-              className={`flex-1 rounded-md transition-all duration-100 cursor-pointer
-                ${active ? 'scale-y-105 shadow-sm' : 'hover:opacity-80'}`}
+              className="flex-1 rounded-md motion-safe:transition-all motion-safe:duration-100
+                         cursor-pointer min-h-[48px] min-w-[44px]
+                         hover:opacity-80"
             />
           );
         })}
       </div>
 
-      <div className="flex justify-between text-[11px] text-slate-400 font-medium mt-2 px-0.5">
+      <div className="flex justify-between text-[11px] text-[var(--text-tertiary)] font-medium mt-2 px-0.5">
         <span>No pain</span>
         <span>Worst possible</span>
       </div>

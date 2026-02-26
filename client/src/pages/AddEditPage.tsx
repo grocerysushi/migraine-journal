@@ -9,9 +9,9 @@ import type { MigraineEntry, PainLocation, Symptom, Trigger, Med } from '../mode
 import { MultiSelect } from '../components/MultiSelect';
 import { IntensitySlider } from '../components/IntensitySlider';
 import { MedsList, type MedFormItem } from '../components/MedsList';
+import { StepWizard } from '../components/StepWizard';
 import { toFormDateTime, formDateTimeToIso } from '../utils/dateHelpers';
 
-// ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
   date_time_start: z.string().min(1, 'Start time is required'),
   date_time_end:   z.string().optional(),
@@ -45,23 +45,14 @@ const entryToForm = (e: MigraineEntry): FormValues => ({
   notes: e.notes,
 });
 
-// ─── Form section wrapper ─────────────────────────────────────────────────────
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-3">
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">{title}</p>
-      {children}
-    </div>
-  );
-}
-
 const inputCls = (err?: boolean) =>
-  `w-full bg-slate-50 border rounded-xl px-3.5 py-3 text-sm text-slate-800
-   placeholder:text-slate-300 transition-colors
-   focus:outline-none focus:bg-white focus:ring-2 focus:ring-violet-400 focus:border-transparent
-   ${err ? 'border-red-300 bg-red-50' : 'border-slate-200'}`;
+  `w-full bg-[var(--surface-elevated)] border rounded-xl px-3.5 py-3 text-sm text-[var(--text-primary)]
+   placeholder:text-[var(--muted)] motion-safe:transition-colors min-h-[44px]
+   focus:outline-none focus:bg-[var(--surface-card)] focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent
+   ${err ? 'border-red-400 bg-red-500/5' : 'border-[var(--border)]'}`;
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const STEPS = ['When & How Bad', 'Where & What', 'Why', 'Treatment & Notes'];
+
 export function AddEditPage() {
   const { id }    = useParams<{ id?: string }>();
   const navigate  = useNavigate();
@@ -69,8 +60,9 @@ export function AddEditPage() {
   const [loading, setLoading]     = useState(isEdit);
   const [saving,  setSaving]      = useState(false);
   const [serverErr, setServerErr] = useState('');
+  const [step, setStep]           = useState(0);
 
-  const { control, handleSubmit, reset, watch, setValue, formState: { errors } } =
+  const { control, handleSubmit, reset, watch, setValue, trigger, formState: { errors } } =
     useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: defaults() });
 
   const triggers  = watch('triggers');
@@ -111,25 +103,36 @@ export function AddEditPage() {
     }
   };
 
+  const stepFields: (keyof FormValues)[][] = [
+    ['date_time_start', 'pain_intensity'],
+    ['locations', 'symptoms'],
+    ['triggers'],
+    ['meds', 'notes'],
+  ];
+
+  const handleNext = async () => {
+    const valid = await trigger(stepFields[step]);
+    if (valid) setStep(s => Math.min(s + 1, STEPS.length - 1));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full motion-safe:animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#f0f2f8]/90 backdrop-blur-md px-5 pt-10 pb-3 mb-2">
+      <div className="sticky top-0 z-10 bg-[var(--surface)]/90 backdrop-blur-md px-5 pt-10 pb-3 mb-2">
         <div className="flex items-center justify-between">
           {isEdit && (
-            <button onClick={() => navigate(-1)} className="text-violet-600 font-semibold text-sm mr-4">
+            <button onClick={() => navigate(-1)} className="text-[var(--accent)] font-semibold text-sm mr-4 min-h-[44px]">
               ← Back
             </button>
           )}
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex-1">
+          <h1 className="text-3xl font-black text-[var(--text-primary)] tracking-tight flex-1">
             {isEdit ? 'Edit Entry' : 'Log Migraine'}
           </h1>
         </div>
@@ -137,104 +140,96 @@ export function AddEditPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="px-4 pb-8">
         {serverErr && (
-          <div className="bg-red-50 border border-red-200 text-red-600 rounded-2xl px-4 py-3 mb-3 text-sm">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-2xl px-4 py-3 mb-3 text-sm">
             {serverErr}
           </div>
         )}
 
-        {/* Timing */}
-        <Section title="When">
-          <div className="mb-3">
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
-              Start Time *
-            </label>
-            <Controller control={control} name="date_time_start" render={({ field }) => (
-              <input type="datetime-local" className={inputCls(Boolean(errors.date_time_start))} {...field} />
-            )} />
-            {errors.date_time_start && (
-              <p className="text-red-500 text-xs mt-1">{errors.date_time_start.message}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
-              End Time <span className="text-slate-300 font-normal normal-case">(optional)</span>
-            </label>
-            <Controller control={control} name="date_time_end" render={({ field }) => (
-              <input type="datetime-local" className={inputCls()} {...field} value={field.value ?? ''} />
-            )} />
-          </div>
-        </Section>
-
-        {/* Intensity */}
-        <Section title="Pain Intensity">
-          <Controller control={control} name="pain_intensity" render={({ field }) => (
-            <IntensitySlider value={field.value} onChange={field.onChange} />
-          )} />
-        </Section>
-
-        {/* Location + Symptoms */}
-        <Section title="Location & Symptoms">
-          <Controller control={control} name="locations" render={({ field }) => (
-            <MultiSelect label="Pain Location" options={PAIN_LOCATIONS} selected={field.value} onChange={field.onChange} />
-          )} />
-          <Controller control={control} name="symptoms" render={({ field }) => (
-            <MultiSelect label="Symptoms" options={SYMPTOMS} selected={field.value} onChange={field.onChange} />
-          )} />
-        </Section>
-
-        {/* Triggers */}
-        <Section title="Triggers">
-          <Controller control={control} name="triggers" render={({ field }) => (
-            <MultiSelect options={TRIGGERS} selected={field.value} onChange={field.onChange} />
-          )} />
-          {showOther && (
-            <div className="mt-1">
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
-                Other — describe
-              </label>
-              <Controller control={control} name="trigger_other" render={({ field }) => (
-                <input className={inputCls()} placeholder="What else triggered it?" {...field} />
+        <StepWizard
+          steps={STEPS}
+          current={step}
+          onBack={() => setStep(s => Math.max(s - 1, 0))}
+          onNext={handleNext}
+          onSubmit={handleSubmit(onSubmit)}
+          submitting={saving}
+        >
+          {/* Step 1: When & How Bad */}
+          {step === 0 && (
+            <div className="bg-[var(--surface-card)] rounded-2xl shadow-sm border border-[var(--border)] p-5">
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-[var(--text-tertiary)] mb-1.5 uppercase tracking-wide">
+                  Start Time *
+                </label>
+                <Controller control={control} name="date_time_start" render={({ field }) => (
+                  <input type="datetime-local" className={inputCls(Boolean(errors.date_time_start))} {...field} />
+                )} />
+                {errors.date_time_start && (
+                  <p className="text-red-500 text-xs mt-1">{errors.date_time_start.message}</p>
+                )}
+              </div>
+              <div className="mb-5">
+                <label className="block text-xs font-semibold text-[var(--text-tertiary)] mb-1.5 uppercase tracking-wide">
+                  End Time <span className="text-[var(--muted)] font-normal normal-case">(optional)</span>
+                </label>
+                <Controller control={control} name="date_time_end" render={({ field }) => (
+                  <input type="datetime-local" className={inputCls()} {...field} value={field.value ?? ''} />
+                )} />
+              </div>
+              <Controller control={control} name="pain_intensity" render={({ field }) => (
+                <IntensitySlider value={field.value} onChange={field.onChange} label="Pain Intensity" />
               )} />
             </div>
           )}
-        </Section>
 
-        {/* Medications */}
-        <Section title="Medications">
-          <Controller control={control} name="meds" render={({ field }) => (
-            <MedsList meds={field.value as MedFormItem[]} onChange={v => setValue('meds', v)} />
-          )} />
-        </Section>
-
-        {/* Notes */}
-        <Section title="Notes">
-          <Controller control={control} name="notes" render={({ field }) => (
-            <textarea
-              rows={3}
-              className={`${inputCls()} resize-none`}
-              placeholder="Anything else worth noting…"
-              {...field}
-            />
-          )} />
-        </Section>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full mt-2 bg-violet-600 hover:bg-violet-700 active:bg-violet-800
-                     disabled:opacity-60 text-white font-bold py-4 rounded-2xl
-                     text-base transition-colors shadow-sm shadow-violet-200"
-        >
-          {saving ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              Saving…
-            </span>
-          ) : (
-            isEdit ? 'Save Changes' : 'Log Migraine'
+          {/* Step 2: Where & What */}
+          {step === 1 && (
+            <div className="bg-[var(--surface-card)] rounded-2xl shadow-sm border border-[var(--border)] p-5">
+              <Controller control={control} name="locations" render={({ field }) => (
+                <MultiSelect label="Pain Location" options={PAIN_LOCATIONS} selected={field.value} onChange={field.onChange} />
+              )} />
+              <Controller control={control} name="symptoms" render={({ field }) => (
+                <MultiSelect label="Symptoms" options={SYMPTOMS} selected={field.value} onChange={field.onChange} />
+              )} />
+            </div>
           )}
-        </button>
+
+          {/* Step 3: Why */}
+          {step === 2 && (
+            <div className="bg-[var(--surface-card)] rounded-2xl shadow-sm border border-[var(--border)] p-5">
+              <Controller control={control} name="triggers" render={({ field }) => (
+                <MultiSelect label="Triggers" options={TRIGGERS} selected={field.value} onChange={field.onChange} />
+              )} />
+              {showOther && (
+                <div className="mt-1">
+                  <label className="block text-xs font-semibold text-[var(--text-tertiary)] mb-1.5 uppercase tracking-wide">
+                    Other — describe
+                  </label>
+                  <Controller control={control} name="trigger_other" render={({ field }) => (
+                    <input className={inputCls()} placeholder="What else triggered it?" {...field} />
+                  )} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 4: Treatment & Notes */}
+          {step === 3 && (
+            <div className="bg-[var(--surface-card)] rounded-2xl shadow-sm border border-[var(--border)] p-5">
+              <Controller control={control} name="meds" render={({ field }) => (
+                <MedsList meds={field.value as MedFormItem[]} onChange={v => setValue('meds', v)} />
+              )} />
+              <p className="text-sm font-semibold text-[var(--text-secondary)] mb-2.5">Notes</p>
+              <Controller control={control} name="notes" render={({ field }) => (
+                <textarea
+                  rows={3}
+                  className={`${inputCls()} resize-none`}
+                  placeholder="Anything else worth noting…"
+                  {...field}
+                />
+              )} />
+            </div>
+          )}
+        </StepWizard>
       </form>
     </div>
   );

@@ -15,7 +15,7 @@ export function MultiSelect({ options, selected, onChange, label, error }: Props
   return (
     <div className="mb-5">
       {label && (
-        <p className="text-sm font-semibold text-slate-700 mb-2.5">{label}</p>
+        <p className="text-sm font-semibold text-[var(--text-secondary)] mb-2.5">{label}</p>
       )}
       <div className="flex flex-wrap gap-2">
         {options.map(opt => {
@@ -25,11 +25,12 @@ export function MultiSelect({ options, selected, onChange, label, error }: Props
               key={opt.value}
               type="button"
               onClick={() => toggle(opt.value)}
-              className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium
-                          border transition-all duration-100 select-none
+              className={`px-4 py-2.5 rounded-full text-[13px] font-medium
+                          border motion-safe:transition-all motion-safe:duration-100 select-none
+                          min-h-[44px]
                 ${active
-                  ? 'border-violet-400 bg-violet-600 text-white shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                  ? 'border-[var(--accent)] bg-[var(--accent)] text-white shadow-sm'
+                  : 'border-[var(--border)] bg-[var(--surface-card)] text-[var(--text-secondary)] hover:border-[var(--accent-muted)] hover:bg-[var(--surface-elevated)]'
                 }`}
             >
               {opt.label}

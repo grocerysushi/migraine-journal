@@ -3,6 +3,33 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --surface: #f5f4f7;
+    --surface-card: #ffffff;
+    --surface-elevated: #eeedf2;
+    --accent: #8b7ec8;
+    --accent-muted: #b4a9de;
+    --muted: #c4c0d0;
+    --text-primary: #2d2a3e;
+    --text-secondary: #6b6580;
+    --text-tertiary: #9993ab;
+    --border: #dddae8;
+    font-size: 17px;
+  }
+
+  .dark {
+    --surface: #1e1b2e;
+    --surface-card: #2a2740;
+    --surface-elevated: #332f4a;
+    --accent: #a599d4;
+    --accent-muted: #7b6db5;
+    --muted: #4a4562;
+    --text-primary: #dddae8;
+    --text-secondary: #a9a3be;
+    --text-tertiary: #726d8a;
+    --border: #3d3856;
+  }
+
   * {
     -webkit-tap-highlight-color: transparent;
   }
@@ -13,8 +40,8 @@
       'Roboto', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #f0f2f8;
-    color: #0f172a;
+    background-color: var(--surface);
+    color: var(--text-primary);
   }
 
   input[type='datetime-local']::-webkit-calendar-picker-indicator {
@@ -26,4 +53,22 @@
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.motion-safe\:animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

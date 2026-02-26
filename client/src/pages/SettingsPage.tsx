@@ -1,5 +1,13 @@
 import { useRef, useState } from 'react';
 import { api } from '../api/client';
+import { useTheme } from '../hooks/useTheme';
+
+type ThemeOption = 'light' | 'dark' | 'system';
+const THEME_OPTIONS: { value: ThemeOption; label: string }[] = [
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System' },
+];
 
 function ActionRow({ title, sub, onClick, danger, loading }: {
   title: string; sub?: string; onClick: () => void; danger?: boolean; loading?: boolean;
@@ -7,20 +15,23 @@ function ActionRow({ title, sub, onClick, danger, loading }: {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left"
+      className="w-full flex items-center justify-between px-5 py-4 min-h-[56px]
+                 hover:bg-[var(--surface-elevated)] active:bg-[var(--surface-elevated)]
+                 motion-safe:transition-colors text-left"
     >
       <div>
-        <p className={`text-sm font-semibold ${danger ? 'text-red-500' : 'text-slate-800'}`}>{title}</p>
-        {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+        <p className={`text-sm font-semibold ${danger ? 'text-red-400' : 'text-[var(--text-primary)]'}`}>{title}</p>
+        {sub && <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{sub}</p>}
       </div>
       {loading
-        ? <div className="w-4 h-4 border-2 border-slate-300 border-t-violet-500 rounded-full animate-spin" />
-        : <span className={`text-lg font-light ${danger ? 'text-red-300' : 'text-slate-300'}`}>›</span>}
+        ? <div className="w-4 h-4 border-2 border-[var(--muted)] border-t-[var(--accent)] rounded-full motion-safe:animate-spin" />
+        : <span className={`text-lg font-light ${danger ? 'text-red-300' : 'text-[var(--text-tertiary)]'}`}>›</span>}
     </button>
   );
 }
 
 export function SettingsPage() {
+  const { theme, setTheme } = useTheme();
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [wiping,    setWiping]    = useState(false);
@@ -31,8 +42,8 @@ export function SettingsPage() {
 
   const handleExport = async () => {
     setExporting(true);
-    try { await api.exportData(); showMsg('✓ Exported successfully'); }
-    catch (e) { showMsg(`✗ ${String(e)}`); }
+    try { await api.exportData(); showMsg('Exported successfully'); }
+    catch (e) { showMsg(`Error: ${String(e)}`); }
     finally { setExporting(false); }
   };
 
@@ -43,9 +54,9 @@ export function SettingsPage() {
     try {
       const json = await file.text();
       const result = await api.importData(json);
-      showMsg(`✓ Imported ${result.imported}, skipped ${result.skipped}`);
+      showMsg(`Imported ${result.imported}, skipped ${result.skipped}`);
     } catch (err) {
-      showMsg(`✗ ${String(err)}`);
+      showMsg(`Error: ${String(err)}`);
     } finally {
       setImporting(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -55,39 +66,59 @@ export function SettingsPage() {
   const handleWipe = async () => {
     if (!window.confirm('Permanently delete ALL entries? This cannot be undone.')) return;
     setWiping(true);
-    try { await api.wipeData(); showMsg('✓ All data deleted'); }
-    catch (e) { showMsg(`✗ ${String(e)}`); }
+    try { await api.wipeData(); showMsg('All data deleted'); }
+    catch (e) { showMsg(`Error: ${String(e)}`); }
     finally { setWiping(false); }
   };
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#f0f2f8]/90 backdrop-blur-md px-5 pt-10 pb-3">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Settings</h1>
+      <div className="sticky top-0 z-10 bg-[var(--surface)]/90 backdrop-blur-md px-5 pt-10 pb-3">
+        <h1 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">Settings</h1>
       </div>
 
       <div className="px-4 pb-8">
         {/* Toast */}
         {msg && (
           <div className={`rounded-2xl px-4 py-3 mb-4 mt-2 text-sm font-semibold
-            ${msg.startsWith('✓')
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-              : 'bg-red-50 text-red-600 border border-red-100'}`}>
+            ${msg.startsWith('Error')
+              ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
             {msg}
           </div>
         )}
 
+        {/* Appearance */}
+        <p className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2 mt-4 px-1">Appearance</p>
+        <div className="bg-[var(--surface-card)] rounded-2xl shadow-sm border border-[var(--border)] overflow-hidden mb-4 p-4">
+          <div className="flex gap-2">
+            {THEME_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setTheme(opt.value)}
+                className={`flex-1 py-3 rounded-xl text-sm font-bold min-h-[48px]
+                           motion-safe:transition-all
+                  ${theme === opt.value
+                    ? 'bg-[var(--accent)] text-white shadow-sm'
+                    : 'bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Data section */}
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 mt-4 px-1">Data</p>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-4">
+        <p className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2 px-1">Data</p>
+        <div className="bg-[var(--surface-card)] rounded-2xl shadow-sm border border-[var(--border)] overflow-hidden mb-4">
           <ActionRow
             title="Export to JSON"
             sub="Download all entries as a backup file"
             onClick={handleExport}
             loading={exporting}
           />
-          <div className="h-px bg-slate-100 mx-5" />
+          <div className="h-px bg-[var(--border)] mx-5" />
           <ActionRow
             title="Import from JSON"
             sub="Merge entries from a backup file"
@@ -98,8 +129,8 @@ export function SettingsPage() {
         </div>
 
         {/* Danger zone */}
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Danger Zone</p>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <p className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2 px-1">Danger Zone</p>
+        <div className="bg-[var(--surface-card)] rounded-2xl shadow-sm border border-[var(--border)] overflow-hidden">
           <ActionRow
             title="Wipe All Data"
             sub="Permanently delete all entries — cannot be undone"
@@ -109,7 +140,7 @@ export function SettingsPage() {
           />
         </div>
 
-        <p className="text-center text-xs text-slate-300 mt-10 font-medium">Migraine Journal · v1.0.0</p>
+        <p className="text-center text-xs text-[var(--text-tertiary)] mt-10 font-medium">Migraine Journal · v1.0.0</p>
       </div>
     </div>
   );

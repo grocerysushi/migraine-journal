@@ -14,9 +14,8 @@ export function Layout() {
         <Outlet />
       </main>
 
-      {/* Bottom nav */}
       <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg
-                      bg-white/90 backdrop-blur-md border-t border-slate-200/80
+                      bg-[var(--surface-card)]/90 backdrop-blur-md border-t border-[var(--border)]
                       flex items-stretch z-50">
         {tabs.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -24,16 +23,18 @@ export function Layout() {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center gap-0.5 py-3 text-[11px] font-semibold
-               transition-colors duration-150 tracking-wide
-               ${isActive ? 'text-violet-600' : 'text-slate-400 hover:text-slate-600'}`
+              `flex-1 flex flex-col items-center justify-center gap-0.5 py-3
+               text-sm font-semibold min-h-[56px]
+               motion-safe:transition-colors motion-safe:duration-150 tracking-wide
+               ${isActive ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'}`
             }
           >
             {({ isActive }) => (
               <>
-                <span className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all duration-150
-                  ${isActive ? 'bg-violet-100 text-violet-600' : 'text-slate-400'}`}>
-                  <Icon size={18} />
+                <span className={`w-9 h-9 flex items-center justify-center rounded-xl
+                  motion-safe:transition-all motion-safe:duration-150
+                  ${isActive ? 'bg-[var(--accent-muted)]/20 text-[var(--accent)]' : 'text-[var(--text-tertiary)]'}`}>
+                  <Icon size={22} />
                 </span>
                 {label}
               </>
@@ -45,9 +46,7 @@ export function Layout() {
   );
 }
 
-// ─── Inline SVG icons ─────────────────────────────────────────────────────────
-
-function BookIcon({ size = 20 }: { size?: number }) {
+function BookIcon({ size = 22 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -56,7 +55,7 @@ function BookIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-function PlusIcon({ size = 20 }: { size?: number }) {
+function PlusIcon({ size = 22 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
       <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -64,7 +63,7 @@ function PlusIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-function ChartIcon({ size = 20 }: { size?: number }) {
+function ChartIcon({ size = 22 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
@@ -73,7 +72,7 @@ function ChartIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-function GearIcon({ size = 20 }: { size?: number }) {
+function GearIcon({ size = 22 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="3"/>
