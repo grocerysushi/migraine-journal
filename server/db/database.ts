@@ -2,7 +2,9 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { runMigrations } from './migrations';
 
-const DB_PATH = path.join(process.cwd(), 'data', 'migraine.db');
+const DB_PATH = process.env.VERCEL
+  ? path.join('/tmp', 'migraine.db')
+  : path.join(process.cwd(), 'data', 'migraine.db');
 
 let _db: Database.Database | null = null;
 

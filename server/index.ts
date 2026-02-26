@@ -9,7 +9,11 @@ const app = express();
 const PORT = process.env.PORT ?? 4000;
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({
+  origin: process.env.VERCEL
+    ? process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : true
+    : 'http://localhost:3000',
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.text({ limit: '10mb', type: 'application/json' }));
 
@@ -27,8 +31,10 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}
 
 export default app;
