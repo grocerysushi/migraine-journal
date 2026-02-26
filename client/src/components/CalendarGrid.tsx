@@ -75,10 +75,6 @@ export function CalendarGrid({ entries, onSelectDate, selectedDate }: Props) {
           const dayEntries = entryMap.get(key) || [];
           const inMonth = isSameMonth(d, currentMonth);
           const isSelected = selectedDate && isSameDay(d, selectedDate);
-          const maxIntensity = dayEntries.length > 0
-            ? Math.max(...dayEntries.map(e => e.pain_intensity))
-            : -1;
-
           return (
             <button
               key={key}
